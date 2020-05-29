@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 mongoose.connect('mongodb+srv://mschan73:a97475729@contextkepper-qhq7g.mongodb.net/test?retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true,useFindAndModify:false},console.log("mongodb connected"));
 const register_user = require("./Model/registeruser")
-const PORT=5000 || process.env.PORT;
+const PORT= process.env.PORT || 5000;
 app.use(express.urlencoded({extended:false}))
 app.set('view engine', 'ejs');
 
