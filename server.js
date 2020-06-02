@@ -2,101 +2,27 @@ const express = require('express')
 const app = express()
 const bcrypt = require('bcrypt'); 
 const mongoose = require('mongoose');
-var jwt = require('jsonwebtoken');
-mongoose.connect('mongodb+srv://mschan73:a97475729@contextkepper-qhq7g.mongodb.net/test?retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true,useFindAndModify:false},console.log("mongodb connected"));
+const jwt = require('jsonwebtoken');
 const register_user = require("./Model/registeruser")
 const PORT= process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log('App listening on port 5000!');
+});
+mongoose.connect('mongodb+srv://mschan73:a97475729@contextkepper-qhq7g.mongodb.net/test?retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true,useFindAndModify:false},console.log("mongodb connected"));
 app.use(express.urlencoded({extended:false}))
 app.set('view engine', 'ejs');
 
 
-app.get('/register', (req, res) => {
+app.use('/', require('./Routers/get_register'))
 
-   
-    res.render('index.ejs');
-});
+app.use('/', require("./Routers/post_register"))
 
-app.post('/register', async(req, res) => {
+app.use('/',require("./Routers/get_login"))
 
-        let user = new register_user();
-        user.email = req.body.email
-       const salt= await bcrypt.genSalt(10);
-        user.password=await bcrypt.hash(req.body.password, salt)
+app.use('/',require("./Routers/post_login"))
 
-        
-    await user.save()
-    
-    
-     console.log(user);
-     res.redirect("/login")
-    
- });
+app.use('/',require("./Routers/get_token"))
 
-app.get('/login', (req, res) => {
+app.use('/',require("./Routers/get_changepassword"))
 
-    res.render('login.ejs',{token:[]});
-});
-
-
-app.post('/login', async(req, res) => {
-
-    try{
-    let user = await register_user.findOne( {email:req.body.email });
-    console.log(user)
-    const isMatch = await bcrypt.compare(req.body.password, user.password)
-    console.log(isMatch);
-
-    if(isMatch){
-    const token =  jwt.sign(
-        {
-          email: user.email,
-        },
-        'secret',
-        {
-          expiresIn: 3600 * 24 * 3
-        }
-      )
-      res.redirect(`/token/${token}`)}}catch(e)
-      {
-          //console.log(e.message)
-      }
-      
-    });
-  
-
-
-app.get('/token/:id', (req, res) => {
-
-    res.render('token.ejs',{token:req.params.id});
-});
-
-app.get('/change_password', (req, res) => {
-
-    res.render('change_password.ejs')
-});
-
-app.post('/change_password', async(req, res) => {
-
-   try{
-    var decoded = jwt.verify(req.body.jwt, 'secret');
-    console.log(decoded.email);
-    if(!decoded.email===req.body.email){
-        return console.log("wrong email password")
-    }
-   // let user = new register_user
-    const filter = { email:req.body.email  };
-    const update = { password: req.body.new_password };
-    console.log(req.body.new_password)
-
-    let doc = await register_user.findOneAndUpdate(filter, update, {
-        new: true
-      });
-      console.log(doc)
-    doc.save()}catch(e){console.log(e.message)}
-
-    
-});
-
-app.listen(PORT, () => {
-    console.log('App listening on port 5000!');
-});
+app.use('/',require("./Routers/post_changepassword"))
